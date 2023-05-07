@@ -1,0 +1,7 @@
+# THIS IS AN EXAMPLE, FILL THIS BY FOLLOWING:
+# https://osu.ppy.sh/home/account/edit for your client id and secret
+# https://discord.com/developers/applications and go to your bot for your token
+# rename this file to "".env"
+client_id=your_client_id
+client_secret="yourclientsecret"
+TOKEN="bot token"
