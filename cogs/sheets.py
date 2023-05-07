@@ -63,6 +63,7 @@ class Sheets(commands.Cog):
     ):
         dataNames = ["data", "teams", "screening", "staffreg", "staff"]
         if sheet_name == "all":
+            await interaction.response.defer()
             for i in dataNames:
                 filepath = Path(f"{i}.csv")
                 worksheet = sh.worksheet(f"{i}_raw")
@@ -71,13 +72,14 @@ class Sheets(commands.Cog):
                     df.to_csv(filepath, header=True, index=False)
             em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"**All** of the sheets have been downloaded successfully.")
         else:
+            await interaction.response.defer()
             filepath = Path(f"{sheet_name}.csv")
             worksheet = sh.worksheet(f"{sheet_name}_raw")
             df = pd.DataFrame(worksheet.get_all_records(head=1))
             with open(filepath, "w") as f:
                 df.to_csv(filepath, header=True, index=False)
             em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"{sheet_name} has been downloaded successfully.")
-        await interaction.response.send_message(embed=em, ephemeral=True)
+        await interaction.followup.send(embed=em, ephemeral=True)
     
 def setup(client):
     client.add_cog(Sheets(client))

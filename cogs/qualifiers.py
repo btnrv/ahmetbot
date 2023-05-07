@@ -44,6 +44,7 @@ class Qualifiers(commands.Cog):
                 em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
                 pass
             else:
+                await interaction.response.defer()
                 if user.username in values_list:
                     em = nextcord.Embed(color=0xff0000, title="**Zaten bir odaya kayıtlısın!** :x:", description=f"Tarih değişikliği için yetkililere ulaş.")
                 elif user.username in values_list2:
@@ -59,6 +60,6 @@ class Qualifiers(commands.Cog):
                         em = nextcord.Embed(color=0x00ff00, title="**Başarılı!** :white_check_mark:", description=f"`{oda_numarası}` numaralı odaya kaydın gerçekleşti.")
                 else:
                     em = nextcord.Embed(color=0xff0000, title="**Kullanıcı bulunamadı!** :x:", description=f"Turnuvaya kayıtlı değilsin.")
-        await interaction.send(embed=em)
+        await interaction.followup.send(embed=em)
 def setup(client):
     client.add_cog(Qualifiers(client))
