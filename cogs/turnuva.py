@@ -1,9 +1,8 @@
 import nextcord
-from nextcord import Interaction, SlashOption
+from nextcord import Interaction
 from nextcord.ext import commands
 import csv
-from ossapi import Ossapi, UserLookupKey, GameMode, RankingType
-from ossapi.enums import Statistics
+from ossapi import Ossapi, UserLookupKey
 import cooldowns
 from dotenv import load_dotenv
 import os
