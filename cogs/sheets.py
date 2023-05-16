@@ -34,6 +34,7 @@ class Sheets(commands.Cog):
     ):
         dataNames = ["data", "teams", "screening", "staffreg", "staff"]
         if sheet_name == "all":
+            await interaction.response.defer()
             for i in dataNames:
                 filepath = Path(f"{i}.csv")
                 df = pd.read_csv(filepath)
@@ -42,13 +43,14 @@ class Sheets(commands.Cog):
                 set_with_dataframe(worksheet, df)
                 em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"**All** of the sheets have been updated successfully.")
         else:
+            await interaction.response.defer()
             filepath = Path(f"{sheet_name}.csv")
             df = pd.read_csv(filepath)
             worksheet = sh.worksheet(f"{sheet_name}_raw")
             worksheet.clear()
             set_with_dataframe(worksheet, df)
             em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"{sheet_name} has been updated successfully.")
-        await interaction.response.send_message(embed=em, ephemeral=True)
+        await interaction.followup.send(embed=em, ephemeral=True)
     
     @sheets.subcommand(
         description="Sheets management."

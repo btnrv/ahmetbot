@@ -83,7 +83,7 @@ class StaffReg(commands.Cog):
                     with open ("staffreg.csv", "a", newline="") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerow(addedData)
-                    em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"Your application has been received.")
+                    em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"Your application has been received.", ephemeral=True)
         await interaction.send(embed=em)
     
     @apply.subcommand(
