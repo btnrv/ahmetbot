@@ -42,6 +42,7 @@ class StaffReg(commands.Cog):
             choices = {"Referee / Hakem": "Referee", "Mappooler": "Mappooler", "Streamer / Yayıncı": "Streamer", "Testplayer": "Testplayer"},
         ),
     ):
+        await interaction.response.defer()
         with open("staffreg.csv", "r") as f:
             namesDict={}
             u = 1
@@ -84,7 +85,7 @@ class StaffReg(commands.Cog):
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerow(addedData)
                     em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"Your application has been received.", ephemeral=True)
-        await interaction.send(embed=em)
+        await interaction.followup.send(embed=em)
     
     @apply.subcommand(
         name="accept",
@@ -92,6 +93,7 @@ class StaffReg(commands.Cog):
     )
     @application_checks.has_any_role("Yetkili", "Sheets")
     async def acceptstaff(self, interaction: Interaction, name: str):
+        await interaction.response.defer()
         namesDict = {}
         u = 0
         with open("staff.csv", "r") as f:
@@ -133,7 +135,7 @@ class StaffReg(commands.Cog):
                     else:
                         pass
                     em = nextcord.Embed(color=0x00FF00, title="**Başarılı!** :white_check_mark:", description=f"{target.mention} {positionDict[user.username][1]} pozisyonuna alındı.")
-        await interaction.send(embed=em)
+        await interaction.followup.send(embed=em)
 
 def setup(client):
     client.add_cog(StaffReg(client))

@@ -29,6 +29,7 @@ class Register(commands.Cog):
     )
     @cooldowns.cooldown(1, 3, bucket=cooldowns.SlashBucket.author)
     async def sil(self, interaction: Interaction):
+        await interaction.response.defer()
         namesDict = {}
         u = 1
         with open("data.csv", 'r') as f:
@@ -65,7 +66,7 @@ class Register(commands.Cog):
                 em = nextcord.Embed(color=0x00FF00, title="**Başarılı!** :white_check_mark:", description="Turnuva kaydınız silindi.")
             else:
                 em = nextcord.Embed(color=0xff0000, title="**Başarısız!** :x:", description=f"Turnuvada zaten kaydın yok.")
-        await interaction.send(embed=em)
+        await interaction.followup.send(embed=em)
     @register.subcommand(
         name="ol",
         description="Turnuvaya kaydınızı yapar."
@@ -74,6 +75,7 @@ class Register(commands.Cog):
     async def ol(self, interaction: Interaction):
         namesDict = {}
         u = 1
+        await interaction.response.defer()
         with open("data.csv", 'r') as f:
             for line in csv.reader(f):
                 namesDict.update({line[0]: int(u)})
@@ -94,7 +96,7 @@ class Register(commands.Cog):
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerow([user.username, user.id])
                     em = nextcord.Embed(color=0x00FF00, title="**Başarılı!** :white_check_mark:", description="Turnuvaya kaydınız gerçekleştirildi.")
-        await interaction.send(embed=em)
+        await interaction.followup.send(embed=em)
 
     @nextcord.slash_command(
         name="takım",
@@ -107,6 +109,7 @@ class Register(commands.Cog):
         description="Kayıtlı takımları aratır."
     )
     async def liste(self, interaction: Interaction, takım_ismi: str):
+        await interaction.response.defer()
         matchingList = []
         desc = ""
         with open("teams.csv", "r") as csvfile:
@@ -121,7 +124,7 @@ class Register(commands.Cog):
                     i = str(i)
                     desc = desc + i + "\n"
                 em = nextcord.Embed(color=interaction.user.color, title=f"Aranan takım: **{teamName}** :white_check_mark:", description=desc)
-        await interaction.send(embed=em)
+        await interaction.followup.send(embed=em)
 
 def setup(client):
     client.add_cog(Register(client))

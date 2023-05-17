@@ -27,6 +27,7 @@ class Qualifiers(commands.Cog):
     )
     @cooldowns.cooldown(1, 3, bucket=cooldowns.SlashBucket.author)
     async def kayıt(self, interaction: Interaction, oda_numarası: int):
+        await interaction.response.defer()
         filepath = Path("ahmetbot.json")
         gc = gspread.service_account(filename=filepath)
         sh = gc.open("Referee - osu!TR Open '23")
@@ -44,7 +45,6 @@ class Qualifiers(commands.Cog):
                 em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
                 pass
             else:
-                await interaction.response.defer()
                 if user.username in values_list:
                     em = nextcord.Embed(color=0xff0000, title="**Zaten bir odaya kayıtlısın!** :x:", description=f"Tarih değişikliği için yetkililere ulaş.")
                 elif user.username in values_list2:
