@@ -1,7 +1,6 @@
 import nextcord
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands, application_checks
-import csv
 from ossapi import Ossapi, UserLookupKey, GameMode, RankingType
 from ossapi.enums import Statistics
 import gspread
@@ -10,6 +9,10 @@ from email_validator import validate_email, EmailNotValidError
 import pandas as pd
 from dotenv import load_dotenv
 import os
+import asyncio
+import csv
+import aiofiles
+from aiocsv import AsyncReader, AsyncDictReader, AsyncWriter, AsyncDictWriter
 
 load_dotenv()
 client_id = os.getenv("client_id")
@@ -43,11 +46,11 @@ class StaffReg(commands.Cog):
         ),
     ):
         await interaction.response.defer()
-        with open("staffreg.csv", "r") as f:
-            namesDict={}
-            u = 1
-            for i in csv.reader(f):
-                namesDict.update({i[0]: u})
+        namesDict = {}
+        u = 1
+        async with aiofiles.open("staffreg.csv", "r") as f:
+            async for line in AsyncReader(f):
+                namesDict.update({line[0]: int(u)})
                 u += 1
         try:
             user = api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
@@ -56,23 +59,22 @@ class StaffReg(commands.Cog):
             pass
         else:
             usernameList = []
-            with open("data.csv", "r") as f:
-                for i in csv.reader(f):
+            async with aiofiles.open("data.csv", "r") as f:
+                async for i in AsyncReader(f):
                     usernameList.append(i[0])
             if user.username in usernameList:
                 em = nextcord.Embed(color=0xff0000, title="**İzin yok!** :x:", description=f"Turnuvada kaydın bulunduğundan başvurun engellendi.\nYine de başvurmak istiyorsan `/kayıt sil` yaz!")
             else:
                 dataList=[]
                 if user.username in namesDict.keys():
-                    with open("staffreg.csv", 'r', newline="") as csvfile:
-                        for line in csv.reader(csvfile):
+                    async with aiofiles.open("staffreg.csv", 'r', newline="") as csvfile:
+                        async for line in AsyncReader(csvfile):
                             dataList.append(line)
                     index = namesDict[f"{user.username}"]
                     dataList.pop(index-1)
-                    with open("staffreg.csv", 'w', newline="") as csvfile:
-                        for i in dataList:
-                            csvwriter = csv.writer(csvfile)
-                            csvwriter.writerow(i)
+                    async with aiofiles.open("staffreg.csv", 'w', newline="") as csvfile:
+                        csvwriter = AsyncWriter(csvfile)
+                        csvwriter.writerows(dataList)
                 try:
                     emailinfo = validate_email(email, check_deliverability=True)
                     email = emailinfo.normalized
@@ -81,8 +83,8 @@ class StaffReg(commands.Cog):
                     pass
                 else:
                     addedData = [user.username, f"{interaction.user.name}#{interaction.user.discriminator}", email, position, f"https://osu.ppy.sh/users/{user.id}", interaction.user.id]
-                    with open ("staffreg.csv", "a", newline="") as csvfile:
-                        csvwriter = csv.writer(csvfile)
+                    async with aiofiles.open("staffreg.csv", "a", newline="") as csvfile:
+                        csvwriter = AsyncWriter(csvfile)
                         csvwriter.writerow(addedData)
                     em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"Your application has been received.", ephemeral=True)
         await interaction.followup.send(embed=em)
@@ -96,8 +98,8 @@ class StaffReg(commands.Cog):
         await interaction.response.defer()
         namesDict = {}
         u = 0
-        with open("staff.csv", "r") as f:
-            for i in csv.reader(f):
+        async with aiofiles.open("staff.csv", "r") as f:
+            async for i in AsyncReader(f):
                 namesDict.update({i[0].lower(): u})
                 u += 1
         if name.lower() in namesDict.keys():
@@ -110,9 +112,9 @@ class StaffReg(commands.Cog):
                 pass
             else:
                 worksheet = sh.worksheet("staff_raw")
-                with open("staffreg.csv", "r") as f:
+                async with aiofiles.open("staffreg.csv", "r") as f:
                     positionDict = {}
-                    for i in csv.reader(f):
+                    async for i in AsyncReader(f):
                         positionDict.update({i[0]: [i[1],i[3],i[5],i[2]]})
                 id = int(positionDict[user.username][2])
                 target = interaction.guild.get_member(id)
@@ -122,8 +124,8 @@ class StaffReg(commands.Cog):
                 else:
                     worksheet.append_row([user.username, user.id, positionDict[user.username][0], positionDict[user.username][1], positionDict[user.username][3]])
                     df = pd.DataFrame(worksheet.get_all_records())
-                    with open("staff.csv", "w"):
-                        df.to_csv("staff.csv", header=True, index=False)
+                    df.to_csv("staff.csv", header=True, index=False)
+                    
                     if positionDict[user.username][1] == "Referee":
                         await target.add_roles(interaction.guild.get_role(1098884075902750750))
                     elif positionDict[user.username][1] == "Mappooler":

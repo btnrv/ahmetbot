@@ -3,8 +3,14 @@ from nextcord import AllowedMentions, Interaction, SlashOption, ChannelType, App
 from nextcord.ext import commands, tasks
 import os
 from dotenv import load_dotenv
-import aiosqlite
 from cooldowns import CallableOnCooldown
+import logging
+
+logger = logging.getLogger('nextcord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='nextcord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -15,7 +21,6 @@ async def on_ready():
     print("Bot hazır")
     print("-----------------")
     await client.change_presence(activity=nextcord.Game(name='asdfg'))
-    client.db = await aiosqlite.connect("giveaway.db")
 
 @client.event
 async def on_application_command_error(inter: nextcord.Interaction, error):
@@ -39,7 +44,7 @@ for fn in os.listdir("./cogs"):
     name="cog"
 )
 @commands.is_owner()
-async def cog(interaction:nextcord.Interaction):
+async def cog(interaction: nextcord.Interaction):
     pass
 @cog.subcommand()
 async def load(interaction: nextcord.Interaction, extension: str):

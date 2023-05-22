@@ -1,11 +1,13 @@
 import nextcord
 from nextcord import Interaction
 from nextcord.ext import commands
-import csv
 from ossapi import Ossapi, UserLookupKey
-import cooldowns
 from dotenv import load_dotenv
 import os
+import asyncio
+import csv
+import aiofiles
+from aiocsv import AsyncReader, AsyncDictReader, AsyncWriter, AsyncDictWriter
 
 load_dotenv()
 client_id = os.getenv("client_id")
@@ -27,13 +29,11 @@ class Register(commands.Cog):
         name="sil",
         description="Turnuvadaki kaydınızı siler."
     )
-    @cooldowns.cooldown(1, 3, bucket=cooldowns.SlashBucket.author)
     async def sil(self, interaction: Interaction):
-        await interaction.response.defer()
         namesDict = {}
         u = 1
-        with open("data.csv", 'r') as f:
-            for line in csv.reader(f):
+        async with aiofiles.open("data.csv", "r") as f:
+            async for line in AsyncReader(f):
                 namesDict.update({line[0]: int(u)})
                 u += 1
         try:
@@ -44,40 +44,29 @@ class Register(commands.Cog):
         else:
             dataList = []
             if user.username in namesDict.keys():
-                with open("data.csv", 'r', newline="") as csvfile:
-                    for line in csv.reader(csvfile):
-                        dataList.append(line)        
+                async with aiofiles.open("data.csv", 'r', newline="") as csvfile:
+                    async for line in AsyncReader(csvfile):
+                        dataList.append(line)       
                 index = namesDict[f"{user.username}"]
                 dataList.pop(index-1)
-                with open("data.csv", 'w', newline="") as csvfile:
-                    for i in dataList:
-                        csvwriter = csv.writer(csvfile)
-                        csvwriter.writerow(i)
+                async with aiofiles.open("data.csv", 'w', newline="") as csvfile:
+                    csvwriter = AsyncWriter(csvfile)
+                    await csvwriter.writerows(dataList)
 
-                dataList = []
-                with open("screening.csv", 'r', newline="") as csvfile:
-                    for line in csv.reader(csvfile):
-                        dataList.append(line)        
-                dataList.pop(index-2)
-                with open("screening.csv", 'w', newline="") as csvfile:
-                    for i in dataList:
-                        csvwriter = csv.writer(csvfile)
-                        csvwriter.writerow(i)        
                 em = nextcord.Embed(color=0x00FF00, title="**Başarılı!** :white_check_mark:", description="Turnuva kaydınız silindi.")
             else:
                 em = nextcord.Embed(color=0xff0000, title="**Başarısız!** :x:", description=f"Turnuvada zaten kaydın yok.")
-        await interaction.followup.send(embed=em)
+        await interaction.send(embed=em)
     @register.subcommand(
         name="ol",
         description="Turnuvaya kaydınızı yapar."
     )
-    @cooldowns.cooldown(1, 3, bucket=cooldowns.SlashBucket.author)
     async def ol(self, interaction: Interaction):
+        await interaction.response.defer()
         namesDict = {}
         u = 1
-        await interaction.response.defer()
-        with open("data.csv", 'r') as f:
-            for line in csv.reader(f):
+        async with aiofiles.open("data.csv", "r") as f:
+            async for line in AsyncReader(f):
                 namesDict.update({line[0]: int(u)})
                 u += 1
         try:
@@ -86,30 +75,26 @@ class Register(commands.Cog):
             em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
             pass
         else:
-            if user.username in namesDict.keys():
+            if interaction.user.display_name in namesDict.keys():
                 em = nextcord.Embed(color=0xff0000, title="**Başarısız!** :x:", description="Turnuvaya kaydınız daha önce yapılmış.")
             else:
-                with open("data.csv", 'a', newline="") as csvfile:
-                    csvwriter = csv.writer(csvfile) 
-                    csvwriter.writerow([user.username, user.id, f"{user.statistics.global_rank}", f"{interaction.user.name}#{interaction.user.discriminator}", interaction.user.id])
-                with open("screening.csv", 'a', newline="") as csvfile:
-                    csvwriter = csv.writer(csvfile)
-                    csvwriter.writerow([user.username, user.id])
-                    em = nextcord.Embed(color=0x00FF00, title="**Başarılı!** :white_check_mark:", description="Turnuvaya kaydınız gerçekleştirildi.")
+                async with aiofiles.open("data.csv", 'a', newline="") as csvfile:
+                    csvwriter = AsyncWriter(csvfile)
+                    await csvwriter.writerow([user.username, user.id, f"{user.statistics.global_rank}", f"{interaction.user.name}#{interaction.user.discriminator}"])
+                em = nextcord.Embed(color=0x00FF00, title="**Başarılı!** :white_check_mark:", description="Turnuvaya kaydınız gerçekleştirildi.")
+                await interaction.user.add_roles(interaction.guild.get_role(1109884538626261022))
         await interaction.followup.send(embed=em)
 
     @nextcord.slash_command(
         name="takım",
         description="Takımlarla ilgili işlemler gerçekleştirir."
     )
-    @cooldowns.cooldown(1, 3, bucket=cooldowns.SlashBucket.author)
     async def takım(self, interaction: Interaction):
         pass
     @takım.subcommand(
         description="Kayıtlı takımları aratır."
     )
     async def liste(self, interaction: Interaction, takım_ismi: str):
-        await interaction.response.defer()
         matchingList = []
         desc = ""
         with open("teams.csv", "r") as csvfile:
@@ -124,7 +109,7 @@ class Register(commands.Cog):
                     i = str(i)
                     desc = desc + i + "\n"
                 em = nextcord.Embed(color=interaction.user.color, title=f"Aranan takım: **{teamName}** :white_check_mark:", description=desc)
-        await interaction.followup.send(embed=em)
+        await interaction.send(embed=em)
 
 def setup(client):
     client.add_cog(Register(client))
