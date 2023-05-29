@@ -1,7 +1,7 @@
 import nextcord
 from nextcord import Interaction
 from nextcord.ext import commands
-from ossapi import Ossapi, UserLookupKey
+from ossapi import OssapiAsync, UserLookupKey
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -12,7 +12,7 @@ from aiocsv import AsyncReader, AsyncDictReader, AsyncWriter, AsyncDictWriter
 load_dotenv()
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
-api = Ossapi(client_id, client_secret)
+api = OssapiAsync(client_id, client_secret)
 
 class Register(commands.Cog):
     def __init__(self, client):
@@ -37,7 +37,7 @@ class Register(commands.Cog):
                 namesDict.update({line[0]: int(u)})
                 u += 1
         try:
-            user = api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
+            user = await api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
         except ValueError:
             em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
             pass
@@ -70,7 +70,7 @@ class Register(commands.Cog):
                 namesDict.update({line[0]: int(u)})
                 u += 1
         try:
-            user = api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
+            user = await api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
         except ValueError:
             em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
             pass
@@ -97,8 +97,8 @@ class Register(commands.Cog):
     async def liste(self, interaction: Interaction, takım_ismi: str):
         matchingList = []
         desc = ""
-        with open("teams.csv", "r") as csvfile:
-            for row in csv.reader(csvfile):
+        async with aiofiles.open("teams.csv", "r") as csvfile:
+            async for row in AsyncReader(csvfile):
                 if takım_ismi.lower() == row[2].lower():
                     matchingList.append(row[0])
                     teamName = row[2]

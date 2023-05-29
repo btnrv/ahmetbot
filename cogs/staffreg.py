@@ -1,7 +1,7 @@
 import nextcord
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands, application_checks
-from ossapi import Ossapi, UserLookupKey, GameMode, RankingType
+from ossapi import OssapiAsync, UserLookupKey, GameMode, RankingType
 from ossapi.enums import Statistics
 import gspread
 from pathlib import Path
@@ -17,7 +17,7 @@ from aiocsv import AsyncReader, AsyncDictReader, AsyncWriter, AsyncDictWriter
 load_dotenv()
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
-api = Ossapi(client_id, client_secret)
+api = OssapiAsync(client_id, client_secret)
 
 filepath = Path("ahmetbot.json")
 gc = gspread.service_account(filename=filepath)
@@ -53,7 +53,7 @@ class StaffReg(commands.Cog):
                 namesDict.update({line[0]: int(u)})
                 u += 1
         try:
-            user = api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
+            user = await api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
         except ValueError:
             em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
             pass
@@ -106,7 +106,7 @@ class StaffReg(commands.Cog):
             em = nextcord.Embed(color=0xff0000, title="**Hata!** :x:", description=f"Kullanıcı zaten kabul edilmiş.")
         else:
             try:
-                user = api.user(name, key=UserLookupKey.USERNAME)
+                user = await api.user(name, key=UserLookupKey.USERNAME)
             except ValueError:
                 em = nextcord.Embed(color=0xff0000, title="**Kullanıcı bulunamadı!** :x:", description=f"Kullanıcı ismi osu! ile eşleşmiyor.")
                 pass

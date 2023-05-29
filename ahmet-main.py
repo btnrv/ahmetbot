@@ -14,7 +14,7 @@ logger.addHandler(handler)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-client = commands.Bot(intents=nextcord.Intents.all(), owner_ids=[482232269038288916, 581745397182234626])
+client = commands.Bot(owner_ids=[482232269038288916])
 
 @client.event
 async def on_ready():

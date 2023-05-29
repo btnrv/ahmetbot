@@ -1,7 +1,7 @@
 import nextcord
 from nextcord import Interaction
 from nextcord.ext import commands
-from ossapi import Ossapi, UserLookupKey
+from ossapi import OssapiAsync, UserLookupKey
 import cooldowns
 from dotenv import load_dotenv
 import os
@@ -11,7 +11,7 @@ from pathlib import Path
 load_dotenv()
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
-api = Ossapi(client_id, client_secret)
+api = OssapiAsync(client_id, client_secret)
 
 class Qualifiers(commands.Cog):
     def __init__(self, client):
@@ -40,7 +40,7 @@ class Qualifiers(commands.Cog):
             em = nextcord.Embed(color=0xff0000, title="**Oda bulunamadı!** :x:", description=f"Bu numaraya sahip bir oda yok.")
         else:    
             try:
-                user = api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
+                user = await api.user(interaction.user.display_name, key=UserLookupKey.USERNAME)
             except ValueError:
                 em = nextcord.Embed(color=0xff0000, title="**Kullanıcı doğrulanamadı!** :x:", description=f"Kullanıcı ismin osu! isminle eşleşmiyor. Yetkililere ulaş.")
                 pass
