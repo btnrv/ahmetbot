@@ -74,7 +74,7 @@ class StaffReg(commands.Cog):
                     dataList.pop(index-1)
                     async with aiofiles.open("staffreg.csv", 'w', newline="") as csvfile:
                         csvwriter = AsyncWriter(csvfile)
-                        csvwriter.writerows(dataList)
+                        await csvwriter.writerows(dataList)
                 try:
                     emailinfo = validate_email(email, check_deliverability=True)
                     email = emailinfo.normalized
@@ -85,9 +85,9 @@ class StaffReg(commands.Cog):
                     addedData = [user.username, f"{interaction.user.name}#{interaction.user.discriminator}", email, position, f"https://osu.ppy.sh/users/{user.id}", interaction.user.id]
                     async with aiofiles.open("staffreg.csv", "a", newline="") as csvfile:
                         csvwriter = AsyncWriter(csvfile)
-                        csvwriter.writerow(addedData)
-                    em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"Your application has been received.", ephemeral=True)
-        await interaction.followup.send(embed=em)
+                        await csvwriter.writerow(addedData)
+                    em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"Your application has been received.")
+        await interaction.followup.send(embed=em, ephemeral=True)
     
     @apply.subcommand(
         name="accept",

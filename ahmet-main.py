@@ -1,6 +1,6 @@
 import nextcord
 from nextcord import AllowedMentions, Interaction, SlashOption, ChannelType, ApplicationCheckFailure
-from nextcord.ext import commands, tasks
+from nextcord.ext import commands, tasks, application_checks
 import os
 from dotenv import load_dotenv
 from cooldowns import CallableOnCooldown
@@ -43,18 +43,21 @@ for fn in os.listdir("./cogs"):
 @client.slash_command(
     name="cog"
 )
-@commands.is_owner()
+@application_checks.is_owner()
 async def cog(interaction: nextcord.Interaction):
     pass
 @cog.subcommand()
+@application_checks.is_owner()
 async def load(interaction: nextcord.Interaction, extension: str):
     client.load_extension(f"cogs.{extension}")
     await interaction.send("cog yüklendi!")
 @cog.subcommand()
+@application_checks.is_owner()
 async def unload(interaction: nextcord.Interaction, extension: str):
     client.unload_extension(f"cogs.{extension}")
     await interaction.send("cog durduruldu!")
 @cog.subcommand()
+@application_checks.is_owner()
 async def reload(interaction: nextcord.Interaction, extension: str):
     client.reload_extension(f"cogs.{extension}")
     await interaction.send("cog yeniden yüklendi!")
