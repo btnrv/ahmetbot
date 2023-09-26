@@ -9,16 +9,12 @@ import asyncio
 
 filepath = Path("ahmetbot.json")
 gc = gspread.service_account(filename=filepath)
-sh = gc.open("Data Sheet - osu!türkiye Open 2023")
+sh = gc.open("Data Sheet - osu!türkiye Bobble League")
 
 class Sheets(commands.Cog):
     def __init__ (self, client):
         self.client = client
-        # self.autoupdater.start()
-
-    # def cog_unload(self):
-    #     self.autoupdater.cancel()
-
+    
     @nextcord.slash_command(
         name="sheets",
         description="Sheets management."
@@ -87,21 +83,6 @@ class Sheets(commands.Cog):
                 df.to_csv(filepath, header=True, index=False)
             em = nextcord.Embed(color=0x00FF00, title="**Success!** :white_check_mark:", description=f"{sheet_name} has been downloaded successfully.")
         await interaction.followup.send(embed=em, ephemeral=True)
-
-    # @tasks.loop(minutes=2.0)
-    # async def autoupdater(self):
-    #     filepath = Path("data.csv")
-    #     df = pd.read_csv(filepath)
-    #     worksheet = sh.worksheet("data_raw")
-    #     worksheet.clear()
-    #     set_with_dataframe(worksheet, df)
-    #     print("data_raw automatically updated")
-        
-    # @autoupdater.before_loop
-    # async def before_printer(self):
-    #     await self.client.wait_until_ready()
-
-
 
 def setup(client):
     client.add_cog(Sheets(client))

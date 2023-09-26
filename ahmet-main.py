@@ -14,13 +14,16 @@ logger.addHandler(handler)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-client = commands.Bot(owner_ids=[482232269038288916])
+intents = nextcord.Intents.default()
+intents.members = True
+client = commands.Bot(owner_ids=[482232269038288916], intents=intents)
+
 
 @client.event
 async def on_ready():
     print("Bot hazır")
     print("-----------------")
-    await client.change_presence(activity=nextcord.Game(name='asdfg'))
+    await client.change_presence(activity=nextcord.Game(name='osu!türkiye Bobble League Turnuvası yakında!'))
 
 @client.event
 async def on_application_command_error(inter: nextcord.Interaction, error):
